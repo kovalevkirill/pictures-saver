@@ -11,9 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.17.1",
-    "cors": "^2.8.1",
     "express": "^4.15.2",
-    "mongoose": "^4.9.0",
+    "form-data": "^2.1.2",
     "morgan": "^1.8.1",
     "nodemon": "^1.11.0"
   }

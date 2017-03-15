@@ -5,6 +5,9 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const config = require('./config');
 const {userObj} = config;
+const FormData = require('form-data');
+const fs = require('fs');
+
 
 app.use(express.static(path.join(__dirname, "views")));
 app.use(bodyParser.json());
@@ -24,6 +27,11 @@ app.post('/login', (req, res) => {
     } else {
         res.status(404).json({message: "Wrong login or password"})
     }
+});
+
+app.post('/image', (req, res)=> {
+    console.log(req.body);
+    res.sendStatus(200);
 });
 
 app.listen(config.serverPort, (req, res) => {
