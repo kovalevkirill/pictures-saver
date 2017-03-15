@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+</head>
+<body>
+<form onsubmit="doLogin(event)">
+    <label for="userName">User name</label>
+    <input type="text" id="userName" value="admin">
+    <label for="password">Password</label>
+    <input type="password" id="password" value="admin">
+    <input type="submit" value="Login">
+</form>
+<script src="lib/axios.min.js"></script>
+<script type="text/javascript">
+    function doLogin(e) {
+        var userName = document.getElementById('userName'),
+            password = document.getElementById('password');
+
+        axios.post('http://localhost:3000/login', {
+            username: userName.value,
+            password: password.value
+        });
+
+        e.preventDefault();
+    }
+</script>
+</body>
+</html>
