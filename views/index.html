@@ -14,9 +14,9 @@
     <label for="password">Password</label>
     <input type="password" id="password" value="admin">
     <input type="submit" value="Login">
-</form>
-<form onsubmit="doLoading(event)" enctype="multipart/form-data">
-    <input type="file" id="img">
+</form><br><br>
+<form onsubmit="doLoading(event)">
+    <input type="file" id="img" name="image">
     <input type="submit" value="Load">
 </form>
 <script src="lib/axios.min.js"></script>
@@ -36,13 +36,11 @@
     function doLoading(e) {
         var img = document.getElementById('img');
 
-        console.log(img.value);
-
-        axios.post('http://localhost:3000/image', {
+        axios.post('http://localhost:3000/upload', {
             path: '/main/sec/loc',
-            id: '123',
-            img: img.value
-        }, {headers: {'Content-Type': 'multipart/form-data'}});
+            id: '123'
+            //img: img.value
+        });
 
         e.preventDefault();
     }

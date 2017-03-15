@@ -15,5 +15,8 @@
     "form-data": "^2.1.2",
     "morgan": "^1.8.1",
     "nodemon": "^1.11.0"
+  },
+  "devDependencies": {
+    "cookie-parser": "^1.4.3"
   }
 }
