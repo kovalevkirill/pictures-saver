@@ -8,42 +8,63 @@
     <title>Login</title>
 </head>
 <body>
-<form onsubmit="doLogin(event)">
+<form id="loginForm"
+      action="/login"
+      method="post">
     <label for="userName">User name</label>
-    <input type="text" id="userName" value="admin">
+    <input type="text" id="userName" value="admin" name="username">
     <label for="password">Password</label>
-    <input type="password" id="password" value="admin">
+    <input type="password" id="password" value="admin" name="password">
     <input type="submit" value="Login">
-</form><br><br>
-<form onsubmit="doLoading(event)">
-    <input type="file" id="img" name="image">
-    <input type="submit" value="Load">
+</form>
+<br><br>
+
+<form id="uploadForm"
+      enctype="multipart/form-data"
+      action="/upload"
+      method="post">
+    <input type="text" value="/local/0/test/learner" name="pathToImg" hidden="hidden">
+    <input type="text" value="id_2235523a2112asdsad" name="deviceId" hidden="hidden">
+    <input type="file" name="userPhoto"/>
+    <input type="submit" value="Upload Image" name="submit">
+    <span id="status"></span>
 </form>
 <script src="lib/axios.min.js"></script>
-<script type="text/javascript">
-    function doLogin(e) {
-        var userName = document.getElementById('userName'),
-            password = document.getElementById('password');
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.1.0/jquery.form.min.js"></script>
+<script>
+    $(document).ready(function () {
 
-        axios.post('http://localhost:3000/login', {
-            username: userName.value,
-            password: password.value
+        $('#uploadForm').submit(function () {
+            $("#status").empty().text("File is uploading...");
+            $(this).ajaxSubmit({
+                error: function (xhr) {
+                    status('Error: ' + xhr.status);
+                },
+
+                success: function (response) {
+                    $("#status").empty().text(response);
+                    console.log(response);
+                }
+            });
+            return false;
         });
 
-        e.preventDefault();
-    }
+        $('#loginForm').submit(function () {
+            $(this).ajaxSubmit({
+                error: function (xhr) {
+                    status('Error: ' + xhr.status);
+                },
 
-    function doLoading(e) {
-        var img = document.getElementById('img');
-
-        axios.post('http://localhost:3000/upload', {
-            path: '/main/sec/loc',
-            id: '123'
-            //img: img.value
-        });
-
-        e.preventDefault();
-    }
+                success: function (response) {
+                    console.log(response);
+                }
+            });
+            return false;
+        })
+    });
 </script>
 </body>
 </html>
