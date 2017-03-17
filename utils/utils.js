@@ -26,4 +26,15 @@ let createFolders = function (path, deviceId) {
     return './' + dirPaths.join('/');
 };
 
-module.exports.createFolders = createFolders;
+function isAuthenticated(req, res, next) {
+    if (req.cookie && req.cookie.userName) {
+        return next();
+    }
+
+    res.redirect('/');
+}
+
+module.exports = {
+    createFolders,
+    isAuthenticated
+};

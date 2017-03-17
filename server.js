@@ -3,7 +3,9 @@ const app = express();
 
 const path = require('path');
 const bodyParser = require('body-parser');
-//const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
+
 
 const config = require('./config');
 const {userObj} = config;
@@ -19,10 +21,19 @@ app.use(express.static(path.join(__dirname, "views")));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(morgan('combined'));
-//app.use(cookieParser);
+app.use(session({
+    secret: userObj.secret,
+    cookie: { maxAge: 60000 },
+    resave: true,
+    saveUninitialized: true}));
+app.use(cookieParser(userObj.secret));
 
 app.get('/', (req, res) => {
-    res.send('Hello');
+    res.redirect('/login');
+});
+
+app.get('/login', (req, res)=> {
+
 });
 
 app.post('/login', (req, res) => {
@@ -31,6 +42,18 @@ app.post('/login', (req, res) => {
     let {username, password} = req.body;
 
     if (username === userObj.username && password == userObj.password) {
+        let cookie = req.cookie;
+
+        if(cookie === undefined) {
+            let options = {
+                maxAge: 1000 * 60 * 15, // would expire after 15 minutes
+                httpOnly: true, // The cookie only accessible by the web server
+                signed: true // Indicates if the cookie should be signed
+            };
+
+            res.cookie('userName', username, options);
+        }
+
         res.status(200).json({message: "Authorithed"});
     } else {
         res.status(404).json({message: "Wrong login or password"})
@@ -39,25 +62,25 @@ app.post('/login', (req, res) => {
 
 app.post('/upload', (req, res) => {
     let storage = multer.diskStorage({
-            destination: function (req, file, callback) {
-                console.log('create folders');
-                console.log(req.body);
-                let createPath = utils.createFolders(req.body.pathToImg, req.body.deviceId);
+        destination: function (req, file, callback) {
+            console.log('create folders');
+            console.log(req.body);
+            let createPath = utils.createFolders(req.body.pathToImg, req.body.deviceId);
 
-                console.log(createPath);
+            console.log(createPath);
 
-                callback(null, createPath);
-            },
-            filename: function (req, file, callback) {
-                callback(null, file.fieldname + '-' + Date.now() + '.' + mime.extension(file.mimetype));
-            }
-        });
+            callback(null, createPath);
+        },
+        filename: function (req, file, callback) {
+            callback(null, file.fieldname + '-' + Date.now() + '.' + mime.extension(file.mimetype));
+        }
+    });
 
     let upload = multer({storage: storage}).fields([
-        {name: 'userPhoto', maxCount: 1, type: 'file' },
-        {name:'pathToImg'},
-        {name:'deviceId'}]
-    );
+        {name: 'userPhoto', maxCount: 1, type: 'file'},
+        {name: 'pathToImg'},
+        {name: 'deviceId'}
+        ]);
 
     upload(req, res, function (err) {
         if (err) {
