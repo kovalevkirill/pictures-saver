@@ -136,20 +136,30 @@ app.post('/upload', (req, res) => {
     let storage = multer.diskStorage({
         destination: function (req, file, callback) {
             console.log('create folders');
-            console.log(req.body);
-            let createPath = utils.createFolders(req.body.pathToImg, req.body.deviceId);
-
-            console.log(createPath);
+            let {createPath} = utils.createFolders(req.body.pathToImg, req.body.deviceId);
 
             callback(null, createPath);
         },
         filename: function (req, file, callback) {
-            callback(null, file.fieldname + '-' + Date.now() + '.' + mime.extension(file.mimetype));
+            console.log('create files');
+            console.log('******');
+            console.log(req.body);
+            let {pathToImg} = req.body,
+                pathArray = pathToImg.split('/'),
+                fileName = pathArray[pathArray.length - 1];
+
+            console.log(typeof  fileName);
+
+            console.log(pathArray[pathArray.length - 1]);
+
+            //console.log(pathArray[pathArray.length - 1]);
+
+            callback(null, fileName);
         }
     });
 
     let upload = multer({storage: storage}).fields([
-        {name: 'userPhoto', maxCount: 1, type: 'file'},
+        {name: 'image', maxCount: 1, type: 'file'},
         {name: 'pathToImg'},
         {name: 'deviceId'}
     ]);

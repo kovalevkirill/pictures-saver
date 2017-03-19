@@ -98,7 +98,6 @@
         }
 
         ul#files li {
-            float: left;
             width: 25%;
             line-height: 25px;
             margin: 1px;
@@ -375,73 +374,42 @@
             return el;
         }
         function showInvite() {
-            let modal = document.getElementById('myModal'),
+            var modal = document.getElementById('myModal'),
                 span = document.getElementsByClassName("close")[0];
 
 
             modal.style.display = "block";
 
-            span.onclick = () => {
+            span.onclick = function () {
                 modal.style.display = "none";
             };
 
-            window.onclick = event => {
+            window.onclick = function (event) {
                 if (event.target == modal) {
                     modal.style.display = "none";
                 }
             };
         }
 
-        function checkOldPassword(ev) {
-            var oldPasswd = ev.target.value,
-                passwdError = document.getElementById('errorOldPasswd');
-
-            axios.post('/check_password', {
-                password: oldPasswd
-            }).then(function (res) {
-                passwdError.style.display = 'none';
-                ev.target.valid = true;
-            }).catch(function (e) {
-                passwdError.style.display = 'block';
-                ev.target.valid = false;
-            });
-
-            clearCorrectMessage();
-
-            validForm();
-        }
-
         function checkNewPasswdEquals() {
-            var newPasswd = document.getElementById('newPasswd'),
-                confirmNewPasswd = document.getElementById('newPasswdConfirm'),
-                errorConfirm = document.getElementById('errorNewPasswd'),
-                isValidConfirm = (newPasswd.value === confirmNewPasswd.value);
-
-            confirmNewPasswd.valid = isValidConfirm;
-            errorConfirm.style.display = isValidConfirm ? 'none' : 'block';
-
             clearCorrectMessage();
             showMinLength();
             validForm();
         }
 
         function validForm() {
-            var submitBtn = document.getElementById("submitForm"),
-                noValidOldPasswd = !document.getElementById("oldPasswd").valid,
-                noValidNewPasswd = !document.getElementById("newPasswdConfirm").valid
-                    && document.getElementById("newPasswdConfirm").value.length < 4;
+            var submitBtn = document.getElementById("submitForm");
 
-            console.log(noValidOldPasswd || noValidNewPasswd);
-
-            submitBtn.disabled = (noValidOldPasswd || noValidNewPasswd);
+            submitBtn.disabled = (document.getElementById("newPasswd").value.length < 4);
         }
 
         function showMinLength() {
             var errMinLength = document.getElementById('errorMinLength'),
-                confirmLength = document.getElementById('newPasswdConfirm').value.length < 4,
-                newLength = document.getElementById('newPasswd').length < 4;
+                newLength = document.getElementById('newPasswd').value.length < 4;
 
-            errMinLength.style.display = (confirmLength || newLength) ? 'block' : 'none';
+            console.log('min length');
+
+            errMinLength.style.display = newLength ? 'block' : 'none';
         }
 
         function updatePasswd(ev) {
@@ -450,15 +418,10 @@
             axios.post('/password', {
                 password: document.getElementById('newPasswdConfirm').value
             }).then(function (res) {
-                var newPasswd = document.getElementById('newPasswd'),
-                    confirmNewPasswd = document.getElementById('newPasswdConfirm'),
-                    oldPasswd = document.getElementById('oldPasswd');
+                var newPasswd = document.getElementById('newPasswd');
 
                 newPasswd.value = '';
-                confirmNewPasswd.value = '';
-                confirmNewPasswd.valid = false;
-                oldPasswd.value = '';
-                oldPasswd.valid = false;
+                newPasswd.valid = false;
 
                 document.getElementById('submitForm').disabled = true;
                 document.getElementById('updateCorrect').style.display = 'block';
@@ -491,29 +454,11 @@
         <h2>Смена пароля</h2>
         <form id="zayavka" onsubmit="updatePasswd(event)">
             <div class="form-group">
-                <label for="oldPasswd">Старый пароль<span style="color: firebrick">*</span></label>
-                <input onkeyup="checkOldPassword(event)" onfocus="clearCorrectMessage()" type="password"
-                       class="form-control" id="oldPasswd"
-                       placeholder="Введите старый пароль" maxlength="30">
-                <p class="bg-danger zayavka__phone__alert" id="errorOldPasswd" hidden>
-                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i> Старый пароль не подходит
-                </p>
-            </div>
-            <div class="form-group">
                 <label for="newPasswd">Новый пароль<span style="color: firebrick">*</span></label>
                 <input onkeyup="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswd"
                        placeholder="Введите новый пароль"
                        maxlength="30">
             </div>
-            <div class="form-group">
-                <label for="newPasswdConfirm">Подтверждение пароля<span style="color: firebrick">*</span></label>
-                <input onkeyup="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswdConfirm"
-                       placeholder="Подтвердите новый пароль"
-                       maxlength="30">
-            </div>
-            <p class="bg-danger zayavka__phone__alert" id="errorNewPasswd" hidden>
-                <i class="fa fa-exclamation-circle" aria-hidden="true"></i> Введенные пароли не совпадают
-            </p>
             <p class="bg-danger zayavka__phone__alert" id="errorMinLength" hidden>
                 <i class="fa fa-exclamation-circle" aria-hidden="true"></i> Минимальная длина пароля 4 символа
             </p>
@@ -531,6 +476,7 @@
             var folder = document.querySelectorAll('a.icon.icon-directory'),
                 images = document.querySelectorAll('a.icon.icon.icon-jpg.icon-image'),
                 png = document.querySelectorAll('a.icon.icon.icon-png.icon-image'),
+                jpeg = document.querySelectorAll('a.icon.icon.icon-jpeg.icon-image'),
                 replaceFromDom = function (replaceArray) {
                     if (replaceArray.length == 0) return;
 
@@ -541,8 +487,11 @@
 
                         imgNode.src = node.href;
                         imgNode.style.width = 'inherit';
+                        imgNode.style.border = '1px solid #555';
                         imgNode.onclick = function () {
-                            if(this.info) {
+                            var parentNode = this.parentNode;
+
+                            if (this.info) {
                                 this.info.style.display = this.isShowed ? 'none' : 'block';
                                 this.isShowed = !this.isShowed;
                             } else {
@@ -566,7 +515,7 @@
                                 deviceId.innerHTML = '<span>DeviceID: ' + deviceText + '</span><br>' +
                                     '<span>Path: ' + pathText + '</span>';
 
-                                parent.appendChild(deviceId);
+                                parentNode.appendChild(deviceId);
 
                                 this.info = deviceId;
                                 this.isShowed = true;
@@ -584,6 +533,7 @@
 
             replaceFromDom(images);
             replaceFromDom(png);
+            replaceFromDom(jpeg);
         }
 
         addIcons();

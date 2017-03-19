@@ -1,29 +1,35 @@
 const mkdirp = require('mkdirp');
 
 let createFolders = function (path, deviceId) {
-    let dirPaths = [deviceId],
-        tmpDirName = '';
+    let dirPath = './store/' + deviceId,
+        res = path.split('/');
 
-    for (let i = 1; i < path.length; i++) {
-        if (path[i] == '/') {
-            dirPaths.push(tmpDirName);
-            tmpDirName = '';
-            continue;
-        }
+    res.pop();
 
-        tmpDirName += path[i];
-    }
+    /*let dirPaths = [deviceId],
+     tmpDirName = '';
 
-    dirPaths.push(tmpDirName);
+     for (let i = 1; i < path.length; i++) {
+     if (path[i] == '/') {
+     dirPaths.push(tmpDirName);
+     tmpDirName = '';
+     continue;
+     }
 
-    if (dirPaths.length) {
-        mkdirp.sync(dirPaths.join('/'), function (err) {
-            if (err) console.error(err);
-            else console.log('pow!');
-        });
-    }
+     tmpDirName += path[i];
+     }
 
-    return './' + dirPaths.join('/');
+     dirPaths.push(tmpDirName);*/
+    dirPath = dirPath + res.join('/');
+
+    console.log(dirPath + res.join('/'));
+
+    mkdirp.sync(dirPath, function (err) {
+        if (err) console.error(err);
+        else console.log('pow!');
+    });
+
+    return dirPath;
 };
 
 function isAuthenticated(req, res, next) {
