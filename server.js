@@ -10,41 +10,107 @@ const cookieParser = require('cookie-parser');
 const config = require('./config');
 const {userObj} = config;
 const utils = require('./utils/utils');
+const serveIndex = require('serve-index');
 
-const fs = require('fs');
 const mkdirp = require('mkdirp');
 const multer = require('multer');
 const morgan = require('morgan');
 const mime = require('mime');
+const jsonfile = require('jsonfile');
+const fs = require('fs');
 
-app.use(express.static(path.join(__dirname, "views")));
-app.use(bodyParser.urlencoded({extended: false}));
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
+//app.use(express.static(path.join(__dirname, './views/assets')));
+app.use('/static', express.static(__dirname + '/views/assets'));
+
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+
 app.use(morgan('combined'));
 app.use(session({
     secret: userObj.secret,
-    cookie: { maxAge: 60000 },
+    cookie: {maxAge: 60000},
     resave: true,
-    saveUninitialized: true}));
+    saveUninitialized: true
+}));
 app.use(cookieParser(userObj.secret));
+app.use('/ftp', serveIndex(
+    './store',
+    {
+        'icons': true,
+        'template': './views/template.html'
+    }));
+
+/*app.get('/ftp', (req, res)=> {
+ if (req.signedCookies && req.signedCookies.userName) {
+ console.log('ok ftp');
+ res.send(200);
+ } else {
+ console.log('no auth');
+ res.redirect('/login');
+ }
+ });*/
 
 app.get('/', (req, res) => {
-    res.redirect('/login');
+    if (req.signedCookies && req.signedCookies.userName) {
+        res.redirect('/ftp');
+    } else {
+        res.redirect('/login');
+    }
 });
 
-app.get('/login', (req, res)=> {
-    res.render('login');
+app.get('/login', (req, res) => {
+    if (req.signedCookies && req.signedCookies.userName) {
+        res.redirect('/ftp');
+    } else {
+        res.render('login.html');
+    }
+});
+
+app.post('/check_password', (req,res)=> {
+    let {password} = JSON.parse(fs.readFileSync('user.json', {encoding: 'utf-8'})),
+        checkPassword = req.body.password;
+
+    if(checkPassword && password === checkPassword) {
+        res.status(200).json({isValid: true});
+    } else {
+        res.status(400).json({isValid: false});
+    }
+});
+
+app.post('/password', (req, res) => {
+    let {password} = req.body,
+        newPassword = {
+            username: "admin",
+            password
+        };
+
+    fs.writeFile('user.json', JSON.stringify(newPassword), (err) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({message: err});
+        } else {
+            res.status(200).json({message: 'Update password is correct'});
+        }
+    });
+});
+
+app.post('/exit', (req, res) => {
+    req.session.destroy();
+    res.clearCookie("userName");
+    res.redirect('/login');
 });
 
 app.post('/login', (req, res) => {
     console.log(req.body);
-
+    let userData = JSON.parse(fs.readFileSync('user.json', {encoding: 'utf-8'}));
     let {username, password} = req.body;
 
-    if (username === userObj.username && password == userObj.password) {
+    if (username === userData.username && password == userData.password) {
         let cookie = req.cookie;
 
-        if(cookie === undefined) {
+        if (cookie === undefined) {
             let options = {
                 maxAge: 1000 * 60 * 15, // would expire after 15 minutes
                 httpOnly: true, // The cookie only accessible by the web server
@@ -54,9 +120,9 @@ app.post('/login', (req, res) => {
             res.cookie('userName', username, options);
         }
 
-        res.status(200).json({message: "Authorithed"});
+        res.redirect('/ftp');
     } else {
-        res.status(404).json({message: "Wrong login or password"})
+        res.status(400).json({message: "Wrong login or password"})
     }
 });
 
@@ -80,7 +146,7 @@ app.post('/upload', (req, res) => {
         {name: 'userPhoto', maxCount: 1, type: 'file'},
         {name: 'pathToImg'},
         {name: 'deviceId'}
-        ]);
+    ]);
 
     upload(req, res, function (err) {
         if (err) {

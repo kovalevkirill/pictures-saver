@@ -6,7 +6,7 @@ const styles = {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginLeft: -90,
+    marginLeft: -115,
     marginTop: -125
 };
 
@@ -15,7 +15,9 @@ class LoginForm extends React.Component {
         super(props);
         this.state = {
             username: '',
-            password: ''
+            password: '',
+            errors: '',
+            isLoading: false
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -31,16 +33,31 @@ class LoginForm extends React.Component {
     }
 
     handleSubmit(event) {
+        event.preventDefault();
+
+        this.setState({errors: '', isLoading: true});
         console.log(this.state);
+
         axios.post('http://localhost:3000/login', {
             username: this.state.username,
             password: this.state.password
-        });
+        }).then((res) => {
+            console.log('all ok');
+            console.log(res);
+        }).catch(e => {
+            let {response: {data:{message}}} = e;
 
-        event.preventDefault();
+            this.setState({errors: message, isLoading: false});
+            console.log(this.state);
+            console.log(message);
+            console.log(e.response);
+        });
     }
 
     render() {
+        const {errors} = this.state;
+
+        console.log(errors);
         return (
             <form onSubmit={this.handleSubmit} style={styles}>
                 <h1>Pictures saver</h1>
@@ -58,15 +75,43 @@ class LoginForm extends React.Component {
                                onChange={this.handleChange}/>
                     </label>
                 </div>
-                <button type="submit" className="btn btn-default">Submit</button>
+                {errors && <div className="errors">{errors}</div>}
+                <button type="submit" className="btn btn-default">Login</button>
             </form>
         );
     }
 }
 
+class Dashboard extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isAutorized: false,
+            path: '/'
+        };
+    }
+
+    render() {
+        return (
+            <div>
+                <h1>Hello</h1>
+            </div>
+        )
+    }
+}
+
+function App() {
+    return (
+        <div>
+            <LoginForm />
+            <Dashboard />
+        </div>
+    );
+}
+
 ReactDom.render(
     (
-        <LoginForm />
+        <App />
     ),
     document.getElementById('root')
 );

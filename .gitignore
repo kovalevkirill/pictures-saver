@@ -4,3 +4,5 @@ config.js
 /uploads
 npm-debug.log
 /views/bundle.js
+/store
+user.json
