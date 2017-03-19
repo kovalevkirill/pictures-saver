@@ -409,10 +409,6 @@
             clearCorrectMessage();
 
             validForm();
-
-            //console.log(isValid);
-
-            //document.getElementById('errorOldPasswd').style.display = isValid ? 'none' : 'block';
         }
 
         function checkNewPasswdEquals() {
@@ -425,17 +421,27 @@
             errorConfirm.style.display = isValidConfirm ? 'none' : 'block';
 
             clearCorrectMessage();
+            showMinLength();
             validForm();
         }
 
         function validForm() {
             var submitBtn = document.getElementById("submitForm"),
                 noValidOldPasswd = !document.getElementById("oldPasswd").valid,
-                noValidNewPasswd = !document.getElementById("newPasswdConfirm").valid;
+                noValidNewPasswd = !document.getElementById("newPasswdConfirm").valid
+                    && document.getElementById("newPasswdConfirm").value.length < 4;
 
             console.log(noValidOldPasswd || noValidNewPasswd);
 
             submitBtn.disabled = (noValidOldPasswd || noValidNewPasswd);
+        }
+
+        function showMinLength() {
+            var errMinLength = document.getElementById('errorMinLength'),
+                confirmLength = document.getElementById('newPasswdConfirm').value.length < 4,
+                newLength = document.getElementById('newPasswd').length < 4;
+
+            errMinLength.style.display = (confirmLength || newLength) ? 'block' : 'none';
         }
 
         function updatePasswd(ev) {
@@ -486,7 +492,8 @@
         <form id="zayavka" onsubmit="updatePasswd(event)">
             <div class="form-group">
                 <label for="oldPasswd">Старый пароль<span style="color: firebrick">*</span></label>
-                <input onblur="checkOldPassword(event)" onfocus="clearCorrectMessage()" type="password" class="form-control" id="oldPasswd"
+                <input onkeyup="checkOldPassword(event)" onfocus="clearCorrectMessage()" type="password"
+                       class="form-control" id="oldPasswd"
                        placeholder="Введите старый пароль" maxlength="30">
                 <p class="bg-danger zayavka__phone__alert" id="errorOldPasswd" hidden>
                     <i class="fa fa-exclamation-circle" aria-hidden="true"></i> Старый пароль не подходит
@@ -494,7 +501,7 @@
             </div>
             <div class="form-group">
                 <label for="newPasswd">Новый пароль<span style="color: firebrick">*</span></label>
-                <input onblur="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswd"
+                <input onkeyup="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswd"
                        placeholder="Введите новый пароль"
                        maxlength="30">
             </div>
@@ -507,12 +514,80 @@
             <p class="bg-danger zayavka__phone__alert" id="errorNewPasswd" hidden>
                 <i class="fa fa-exclamation-circle" aria-hidden="true"></i> Введенные пароли не совпадают
             </p>
+            <p class="bg-danger zayavka__phone__alert" id="errorMinLength" hidden>
+                <i class="fa fa-exclamation-circle" aria-hidden="true"></i> Минимальная длина пароля 4 символа
+            </p>
             <button disabled type="submit" class="btn btn-success" id="submitForm">Поменять пароль</button>
         </form>
-        <p class="bg-success update-success" id="updateCorrect" hidden><i class="fa fa-info-circle" aria-hidden="true"></i>
+        <p class="bg-success update-success" id="updateCorrect" hidden><i class="fa fa-info-circle"
+                                                                          aria-hidden="true"></i>
             Пароль обновлен успешно!</p>
     </div>
 </div>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script type="text/javascript">
+    window.onload = function () {
+        function addIcons() {
+            var folder = document.querySelectorAll('a.icon.icon-directory'),
+                images = document.querySelectorAll('a.icon.icon.icon-jpg.icon-image'),
+                png = document.querySelectorAll('a.icon.icon.icon-png.icon-image'),
+                replaceFromDom = function (replaceArray) {
+                    if (replaceArray.length == 0) return;
+
+                    for (var i = 0; i < replaceArray.length; i++) {
+                        var node = replaceArray[i],
+                            parent = node.parentNode,
+                            imgNode = document.createElement('img');
+
+                        imgNode.src = node.href;
+                        imgNode.style.width = 'inherit';
+                        imgNode.onclick = function () {
+                            if(this.info) {
+                                this.info.style.display = this.isShowed ? 'none' : 'block';
+                                this.isShowed = !this.isShowed;
+                            } else {
+                                var deviceId = document.createElement('div'),
+                                    href = this.src,
+                                    deviceText = '',
+                                    pathText = '';
+
+                                href = href.replace('http://', '');
+                                href = href.replace('https://', '');
+
+                                var res = href.split('/');
+
+                                res.pop();
+                                deviceText = res[2];
+
+                                for (var i = 3; i < res.length; i++) {
+                                    pathText += res[i] + '/';
+                                }
+
+                                deviceId.innerHTML = '<span>DeviceID: ' + deviceText + '</span><br>' +
+                                    '<span>Path: ' + pathText + '</span>';
+
+                                parent.appendChild(deviceId);
+
+                                this.info = deviceId;
+                                this.isShowed = true;
+                            }
+                        };
+
+                        node.style.display = 'none';
+                        parent.appendChild(imgNode);
+                    }
+                };
+
+            for (var i = 0; i < folder.length; i++) {
+                folder[i].className = 'fa fa-folder-o';
+            }
+
+            replaceFromDom(images);
+            replaceFromDom(png);
+        }
+
+        addIcons();
+    }
+</script>
 </body>
 </html>
