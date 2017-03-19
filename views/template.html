@@ -405,7 +405,9 @@
                 passwdError.style.display = 'block';
                 ev.target.valid = false;
             });
-            
+
+            clearCorrectMessage();
+
             validForm();
 
             //console.log(isValid);
@@ -422,9 +424,10 @@
             confirmNewPasswd.valid = isValidConfirm;
             errorConfirm.style.display = isValidConfirm ? 'none' : 'block';
 
+            clearCorrectMessage();
             validForm();
         }
-        
+
         function validForm() {
             var submitBtn = document.getElementById("submitForm"),
                 noValidOldPasswd = !document.getElementById("oldPasswd").valid,
@@ -437,8 +440,6 @@
 
         function updatePasswd(ev) {
             ev.preventDefault();
-
-            console.log()
 
             axios.post('/password', {
                 password: document.getElementById('newPasswdConfirm').value
@@ -454,7 +455,12 @@
                 oldPasswd.valid = false;
 
                 document.getElementById('submitForm').disabled = true;
-            })
+                document.getElementById('updateCorrect').style.display = 'block';
+            });
+        }
+
+        function clearCorrectMessage() {
+            document.getElementById('updateCorrect').style.display = 'none';
         }
     </script>
 </head>
@@ -463,8 +469,8 @@
     <form action="/exit" method="post" style="display: inline-block">
         <button type="submit" class="btn btn-success"><i class="fa fa-sign-out" aria-hidden="true"></i> Выход</button>
     </form>
-    <button id="changePassword" onclick="showInvite()" type="button" class="btn btn-primary"><i class="fa fa-key"
-                                                                                                aria-hidden="true"></i>
+    <button id="changePassword" onclick="showInvite()" type="button" class="btn btn-primary">
+        <i class="fa fa-key" aria-hidden="true"></i>
         Смена пароля
     </button>
 </div>
@@ -480,7 +486,7 @@
         <form id="zayavka" onsubmit="updatePasswd(event)">
             <div class="form-group">
                 <label for="oldPasswd">Старый пароль<span style="color: firebrick">*</span></label>
-                <input onblur="checkOldPassword(event)" type="password" class="form-control" id="oldPasswd"
+                <input onblur="checkOldPassword(event)" onfocus="clearCorrectMessage()" type="password" class="form-control" id="oldPasswd"
                        placeholder="Введите старый пароль" maxlength="30">
                 <p class="bg-danger zayavka__phone__alert" id="errorOldPasswd" hidden>
                     <i class="fa fa-exclamation-circle" aria-hidden="true"></i> Старый пароль не подходит
@@ -488,12 +494,14 @@
             </div>
             <div class="form-group">
                 <label for="newPasswd">Новый пароль<span style="color: firebrick">*</span></label>
-                <input onblur="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswd" placeholder="Введите новый пароль"
+                <input onblur="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswd"
+                       placeholder="Введите новый пароль"
                        maxlength="30">
             </div>
             <div class="form-group">
                 <label for="newPasswdConfirm">Подтверждение пароля<span style="color: firebrick">*</span></label>
-                <input onkeyup="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswdConfirm" placeholder="Подтвердите новый пароль"
+                <input onkeyup="checkNewPasswdEquals()" type="password" class="form-control" id="newPasswdConfirm"
+                       placeholder="Подтвердите новый пароль"
                        maxlength="30">
             </div>
             <p class="bg-danger zayavka__phone__alert" id="errorNewPasswd" hidden>
@@ -501,7 +509,8 @@
             </p>
             <button disabled type="submit" class="btn btn-success" id="submitForm">Поменять пароль</button>
         </form>
-        <p class="bg-success update-success" id="updateCorrect"><i class="fa fa-info-circle" aria-hidden="true"></i> Пароль обновлен успешно!</p>
+        <p class="bg-success update-success" id="updateCorrect" hidden><i class="fa fa-info-circle" aria-hidden="true"></i>
+            Пароль обновлен успешно!</p>
     </div>
 </div>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
